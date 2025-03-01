@@ -13,11 +13,18 @@ class MailClient:
         master.title("Mail Client")
 
         self.username_label = tk.Label(
-            master, text="Enter username:", height=2, width=20
+            master, text="Enter username: ", height=3, width=20
         )
-        self.username_label.pack(padx=10, pady=10)
+        self.username_label.grid(row=0, column=0)
         self.username_entry = tk.Entry(master)
-        self.username_entry.pack(padx=20, pady=20)
+        self.username_entry.grid(row=0, column=2)
+
+        self.password_label = tk.Label(
+            master, text="Enter password: ", height=3, width=20
+        )
+        self.password_label.grid(row=1,column=0)
+        self.password_entry = tk.Entry(master)
+        self.password_entry.grid(row=1, column=2)
 
         self.create_account_button = tk.Button(
             master,
@@ -26,7 +33,16 @@ class MailClient:
             height=2,
             width=20,
         )
-        self.create_account_button.pack()
+        self.create_account_button.grid(row=3, column=0)
+
+        self.login_account_button = tk.Button(
+            master,
+            text="Login Account",
+            command=self.login_account,
+            height=2,
+            width=20,
+        )
+        self.login_account_button.grid(row=3, column=2)
 
     def display_main_window(self):
         self.master.title(self.username_entry.get())
@@ -91,6 +107,9 @@ class MailClient:
                 messagebox.showerror("Error", "Failed to create account!")
         else:
             messagebox.showerror("Error", "Username cannot be empty!")
+
+    def login_account(self):
+        print("Login account")
 
     def send_email(self):
         username = self.recipient_entry.get()
