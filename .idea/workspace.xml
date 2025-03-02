@@ -7,6 +7,11 @@
     <list default="true" id="23f42ac5-6e2a-4c63-877c-21233f0339d0" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client.py" beforeDir="false" afterPath="$PROJECT_DIR$/client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mails/A/new_email.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mails/ngân/email_2_from_thúy.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mails/ngân/new_email.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mails/thúy/new_email.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/server.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,7 +44,7 @@
     "Python.test.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "Ngan__010325"
+    "git-widget-placeholder": "Ngan__020325"
   }
 }]]></component>
   <component name="RunManager" selected="Python.client">

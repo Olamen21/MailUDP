@@ -2,6 +2,7 @@ import socket
 import os
 import threading
 import tkinter as tk
+import bcrypt
 from tkinter import Listbox
 
 SERVER_HOST = "localhost"
@@ -23,19 +24,41 @@ def handle_client(data, client_address):
 
     if command[0] == "CREATE_ACCOUNT":
         username = command[1]
+        password = command[2].encode("utf-8")
         user_dir = os.path.join(PATH_TO_SAVE, username)
 
-        os.makedirs(user_dir, exist_ok=True)
+        if os.path.exists(user_dir):  # Kiểm tra username đã tồn tại chưa
+            server_socket.sendto(b"USERNAME_EXISTS", client_address)
+        else:
+            os.makedirs(user_dir, exist_ok=True)
+            # Băm mật khẩu trước khi lưu
+            hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
+            with open(os.path.join(user_dir, "password.txt"), "wb") as f:
+                f.write(hashed_password)  # Lưu mật khẩu đã băm
+            with open(os.path.join(user_dir, "new_email.txt"), "w") as f:
+                f.write(
+                    "Thank you for using this service. We hope that you will feel comfortable."
+                )
+            server_socket.sendto(b"Account created successfully.", client_address)
+            # Update the user list in the GUI when a new account is created
+            update_user_list()
+    elif command[0] == "LOGIN":
+        username = command[1]
+        password = command[2].encode("utf-8")
+        user_dir = os.path.join(PATH_TO_SAVE, username)
+        password_file = os.path.join(user_dir, "password.txt")
+        if not os.path.exists(user_dir):
+            server_socket.sendto(b"USER_NOT_FOUND", client_address)
+        else:
+            with open(password_file, "rb") as f:
+                stored_hashed_password = f.read()
 
-        with open(os.path.join(user_dir, "new_email.txt"), "w") as f:
-            f.write(
-                "Thank you for using this service. We hope that you will feel comfortable."
-            )
+            if bcrypt.checkpw(password, stored_hashed_password):  # So sánh mật khẩu đã mã hóa
+                server_socket.sendto(b"LOGIN_SUCCESS", client_address)
+            else:
+                server_socket.sendto(b"INVALID_PASSWORD", client_address)
 
-        server_socket.sendto(b"Account created successfully.", client_address)
 
-        # Update the user list in the GUI when a new account is created
-        update_user_list()
 
     elif command[0] == "SEND_EMAIL":
         username = command[1]
