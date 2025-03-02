@@ -7,7 +7,7 @@ from tkinter import Listbox
 
 SERVER_HOST = "localhost"
 SERVER_PORT = 1233
-BUFFER_SIZE = 1024
+BUFFER_SIZE = 8192
 PATH_TO_SAVE = "mails"
 
 
