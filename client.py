@@ -1,6 +1,6 @@
 import socket
 import tkinter as tk
-from tkinter import messagebox, Listbox
+from tkinter import messagebox, Listbox, scrolledtext
 
 SERVER_HOST = "localhost"
 SERVER_PORT = 1233
@@ -17,14 +17,14 @@ class MailClient:
         )
         self.username_label.grid(row=0, column=0)
         self.username_entry = tk.Entry(master)
-        self.username_entry.grid(row=0, column=2)
+        self.username_entry.grid(row=0, column=1)
 
         self.password_label = tk.Label(
             master, text="Enter password: ", height=3, width=20
         )
         self.password_label.grid(row=1,column=0)
         self.password_entry = tk.Entry(master)
-        self.password_entry.grid(row=1, column=2)
+        self.password_entry.grid(row=1, column=1)
 
         self.create_account_button = tk.Button(
             master,
@@ -32,8 +32,9 @@ class MailClient:
             command=self.create_account,
             height=2,
             width=20,
+            bg='lightblue'
         )
-        self.create_account_button.grid(row=3, column=0)
+        self.create_account_button.grid(row=3, column=0, padx=5, pady=10)
 
         self.login_account_button = tk.Button(
             master,
@@ -41,17 +42,15 @@ class MailClient:
             command=self.login_account,
             height=2,
             width=20,
+            bg='azure'
         )
-        self.login_account_button.grid(row=3, column=2)
+        self.login_account_button.grid(row=3, column=1, padx=5, pady=10)
 
-    def display_main_window(self):
-        self.master.title(self.username_entry.get())
-        self.username_label.destroy()
-        self.username_entry.pack_forget()
-        self.create_account_button.destroy()
-
+    def display_main_window(self, username):
+        for widget in self.master.winfo_children():
+            widget.destroy()
         self.label_title = tk.Label(
-            self.master, text=f"Hello {self.username_entry.get()}", width=20, height=3
+            self.master, text=f"Hello {username}", width=20, height=3, font=("Arial",23)
         )
         self.label_title.pack(padx=20, pady=20)
 
@@ -59,70 +58,89 @@ class MailClient:
         self.send_email_button = tk.Button(
             self.master,
             text="Send Email",
-            command=self.open_send_email_window,
+            command=lambda: self.open_send_email_window(username),
             height=2,
             width=20,
+            bg='lightblue'
         )
         self.send_email_button.pack(padx=15, pady=15)
 
         # Get Emails Button
         self.get_emails_button = tk.Button(
-            self.master, text="Get Emails", command=self.get_emails, height=2, width=20
+            self.master, text="Get Emails", command=lambda: self.get_emails(username), height=2, width=20, bg='azure'
         )
         self.get_emails_button.pack(padx=15, pady=15)
 
-    def open_send_email_window(self):
+    def open_send_email_window(self, username):
         self.send_email_window = tk.Toplevel(self.master)
         self.send_email_window.title("Send Email")
+        self.send_email_window.geometry("520x320")
 
-        tk.Label(self.send_email_window, text="Send to").pack()
-        self.recipient_entry = tk.Entry(self.send_email_window)
-        self.recipient_entry.pack()
+        tk.Label(self.send_email_window, text="Send to").grid(row=0,column=0,padx=5,pady=10)
+        self.recipient_entry = tk.Entry(self.send_email_window, width=66)
+        self.recipient_entry.grid(row=0,column=1,padx=5,pady=10, sticky='w')
 
-        tk.Label(self.send_email_window, text="Content:").pack()
-        self.content_entry = tk.Entry(self.send_email_window)
-        self.content_entry.pack()
+        tk.Label(self.send_email_window, text="Content:").grid(row=1,column=0,padx=5,pady=10)
+        self.content_entry = scrolledtext.ScrolledText(self.send_email_window, wrap=tk.WORD, width=40, height=8, font=("Times New Roman", 15))
+        self.content_entry.grid(row=1,column=1,padx=5,pady=10)
 
         self.send_button = tk.Button(
-            self.send_email_window, text="Send", command=self.send_email
+            self.send_email_window, text="Send", command=lambda: self.send_email(username), height= 2, width=10, bg='lightblue'
         )
-        self.send_button.pack()
+        self.send_button.grid(row=2,column=0,padx=5,pady=10)
 
         self.cancel_button = tk.Button(
-            self.send_email_window, text="Cancel", command=self.cancel_send_email
+            self.send_email_window, text="Cancel", command=self.cancel_send_email, height= 2, width=10, bg='azure'
         )
-        self.cancel_button.pack()
+        self.cancel_button.grid(row=2,column=1, sticky='w', padx=5,pady=10) # stick to the west side of the column.
 
     def cancel_send_email(self):
         self.send_email_window.destroy()
 
     def create_account(self):
         username = self.username_entry.get().strip()
-        if username:
-            response = self.send_to_server(f"CREATE_ACCOUNT:{username}")
-            if "successfully" in response:
-                messagebox.showinfo("Success", "Account created!")
-                self.display_main_window()
-            else:
-                messagebox.showerror("Error", "Failed to create account!")
+        password = self.password_entry.get().strip()
+        if not username or not password:
+            messagebox.showerror("Error", "Username and password cannot be empty!")
+            return
+
+        response = self.send_to_server(f"CREATE_ACCOUNT:{username}:{password}")
+        if "successfully" in response:
+            messagebox.showinfo("Success", "Account created!")
+            self.display_main_window(username)
+        elif response == "USERNAME_EXISTS":
+            messagebox.showinfo("Info", "Username already exists, please enter password to login!")
         else:
-            messagebox.showerror("Error", "Username cannot be empty!")
+            messagebox.showerror("Error", "Failed to create account!")
+
 
     def login_account(self):
-        print("Login account")
+        username = self.username_entry.get().strip()
+        password = self.password_entry.get().strip()
+        if not username or not password:
+            messagebox.showerror("Error", "Username and password cannot be empty!")
 
-    def send_email(self):
-        username = self.recipient_entry.get()
-        email_content = self.content_entry.get().strip()
-        sending_name = self.username_entry.get()
+        response = self.send_to_server(f"LOGIN:{username}:{password}")
+        if response == "LOGIN_SUCCESS":
+            messagebox.showinfo("Success", "Login successful!")
+            self.display_main_window(username)  # Chuyển sang màn hình chính
+        elif response == "INVALID_PASSWORD":
+            messagebox.showerror("Error", "Incorrect password! Please try again.")
+        elif response == "USER_NOT_FOUND":
+            messagebox.showerror("Error", "Username not found! Please create an account.")
+        else:
+            messagebox.showerror("Error", "Login failed! Please try again later.")
 
-        self.send_to_server(f"SEND_EMAIL:{username}:{email_content}:{sending_name}")
+    def send_email(self,username):
+        recipient_name = self.recipient_entry.get()
+        email_content = self.content_entry.get("1.0", tk.END).strip()
+
+        self.send_to_server(f"SEND_EMAIL:{recipient_name}:{email_content}:{username}")
 
         messagebox.showinfo("Success", "Mail was sent")
         self.send_email_window.destroy()
 
-    def get_emails(self):
-        username = self.username_entry.get()
+    def get_emails(self, username):
         response = self.send_to_server(f"GET_EMAILS:{username}")
         email_files = response.split(", ")
 
@@ -151,6 +169,7 @@ class MailClient:
 
     def send_to_server(self, message):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as client_socket:
+            client_socket.settimeout(5)
             client_socket.sendto(message.encode("utf-8"), (SERVER_HOST, SERVER_PORT))
             response, _ = client_socket.recvfrom(BUFFER_SIZE)
             return response.decode("utf-8")
