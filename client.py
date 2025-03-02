@@ -1,10 +1,11 @@
 import socket
 import tkinter as tk
 from tkinter import messagebox, Listbox, scrolledtext
+from tkinter import *
 
 SERVER_HOST = "localhost"
 SERVER_PORT = 1233
-BUFFER_SIZE = 1024
+BUFFER_SIZE = 8192
 
 
 class MailClient:
@@ -47,6 +48,7 @@ class MailClient:
         self.login_account_button.grid(row=3, column=1, padx=5, pady=10)
 
     def display_main_window(self, username):
+        self.username = username
         for widget in self.master.winfo_children():
             widget.destroy()
         self.label_title = tk.Label(
@@ -126,8 +128,10 @@ class MailClient:
             self.display_main_window(username)  # Chuyển sang màn hình chính
         elif response == "INVALID_PASSWORD":
             messagebox.showerror("Error", "Incorrect password! Please try again.")
+            return
         elif response == "USER_NOT_FOUND":
             messagebox.showerror("Error", "Username not found! Please create an account.")
+            return
         else:
             messagebox.showerror("Error", "Login failed! Please try again later.")
 
@@ -149,13 +153,27 @@ class MailClient:
     def display_emails(self, email_files):
         self.email_window = tk.Toplevel(self.master)
         self.email_window.title("Emails")
+        self.email_window.geometry("700x350")
 
-        self.email_listbox = Listbox(self.email_window)
+        # Tạo frame chứa danh sách email và scrollbar
+        frame = tk.Frame(self.email_window)
+        frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5, pady=5)
+        scrollbar = Scrollbar(frame,orient=tk.VERTICAL)
+
+        self.email_listbox = Listbox(frame,yscrollcommand=scrollbar.set,bg="lightblue",font=("Arial",11))
+        # Gán thanh cuộn cho Listbox
+        scrollbar.config(command=self.email_listbox.yview)
+        # Đặt listbox và scrollbar vào frame
+        self.email_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         for email_file in email_files:
             self.email_listbox.insert(tk.END, email_file)
-        self.email_listbox.pack()
-
         self.email_listbox.bind("<<ListboxSelect>>", self.read_email)
+        self.content_label = tk.Label(
+            self.email_window, text="Select an email to read", anchor="nw", justify="left", wraplength=400, bg="azure",
+            font=("Arial", 11)
+        )
+        self.content_label.pack(side=RIGHT,fill=BOTH, expand=True, padx=10, pady=5)
 
     def read_email(self, event):
         selection = event.widget.curselection()
@@ -163,9 +181,8 @@ class MailClient:
             index = selection[0]
             email_filename = event.widget.get(index)
 
-            username = self.username_entry.get()
-            response = self.send_to_server(f"READ_EMAIL:{username}:{email_filename}")
-            messagebox.showinfo("Email Content", response)
+            response = self.send_to_server(f"READ_EMAIL:{self.username}:{email_filename}")
+            self.content_label.config(text=response)
 
     def send_to_server(self, message):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as client_socket:
