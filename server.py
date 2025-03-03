@@ -19,15 +19,6 @@ def log_message(message):
     log_text.config(state=tk.DISABLED)
     log_text.yview(tk.END)
 
-
-def update_user_list():
-    """Cập nhật danh sách người dùng hiển thị trên GUI."""
-    users = os.listdir(PATH_TO_SAVE)
-    user_listbox.delete(0, tk.END)
-    for user in users:
-        user_listbox.insert(tk.END, user)
-
-
 def handle_client(data, client_address):
     """Xử lý yêu cầu từ client."""
     command = data.decode("utf-8").split(":")
@@ -49,7 +40,6 @@ def handle_client(data, client_address):
                 f.write("Welcome! Your account has been created successfully.")
             server_socket.sendto(b"Account created successfully.", client_address)
             log_message(f"New account created: {username}")
-            update_user_list()
 
     elif command[0] == "LOGIN":
         username = command[1]
@@ -149,10 +139,5 @@ tk.Button(start_frame, text="Start Server", command=switch_to_log_view, font=("A
 log_frame = tk.Frame(root)
 log_text = scrolledtext.ScrolledText(log_frame, width=90, height=25, font=("Arial", 14), state=tk.DISABLED)
 log_text.pack(padx=10, pady=10)
-
-# Danh sách người dùng
-user_listbox = Listbox(log_frame, width=50, height=10)
-user_listbox.pack()
-tk.Button(log_frame, text="Refresh User List", command=update_user_list).pack()
 
 root.mainloop()

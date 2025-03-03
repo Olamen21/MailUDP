@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="23f42ac5-6e2a-4c63-877c-21233f0339d0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/server.py" afterDir="false" />
-    </list>
+    <list default="true" id="23f42ac5-6e2a-4c63-877c-21233f0339d0" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -40,10 +37,10 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "tthuy"
+    "git-widget-placeholder": "main"
   }
 }]]></component>
-  <component name="RunManager" selected="Python.client">
+  <component name="RunManager" selected="Python.server">
     <configuration name="client" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="MailUDP" />
       <option name="ENV_FILES" value="" />
@@ -90,8 +87,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.client" />
         <item itemvalue="Python.server" />
+        <item itemvalue="Python.client" />
       </list>
     </recent_temporary>
   </component>
