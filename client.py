@@ -6,7 +6,8 @@ from tkinter import *
 SERVER_HOST = "localhost"
 SERVER_PORT = 1233
 BUFFER_SIZE = 8192
-
+hostname = socket.gethostname()
+IPAddr = socket.gethostbyname(hostname)
 
 class MailClient:
     def __init__(self, master):
@@ -106,7 +107,7 @@ class MailClient:
             messagebox.showerror("Error", "Username and password cannot be empty!")
             return
 
-        response = self.send_to_server(f"CREATE_ACCOUNT:{username}:{password}")
+        response = self.send_to_server(f"CREATE_ACCOUNT:{username}:{password}:{IPAddr}")
         if "successfully" in response:
             messagebox.showinfo("Success", "Account created!")
             self.display_main_window(username)
@@ -122,7 +123,7 @@ class MailClient:
         if not username or not password:
             messagebox.showerror("Error", "Username and password cannot be empty!")
 
-        response = self.send_to_server(f"LOGIN:{username}:{password}")
+        response = self.send_to_server(f"LOGIN:{username}:{password}:{IPAddr}")
         if response == "LOGIN_SUCCESS":
             messagebox.showinfo("Success", "Login successful!")
             self.display_main_window(username)  # Chuyển sang màn hình chính

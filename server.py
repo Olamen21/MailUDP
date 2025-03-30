@@ -9,54 +9,93 @@ from datetime import datetime
 BUFFER_SIZE = 1024
 PATH_TO_SAVE = "mails"
 server_socket = None
-
+timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 def log_message(message):
-    """Ghi log với timestamp vào giao diện."""
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
     log_text.config(state=tk.NORMAL)
     log_text.insert(tk.END, f"[{timestamp}]:  {message}\n")
     log_text.config(state=tk.DISABLED)
     log_text.yview(tk.END)
 
+
 def handle_client(data, client_address):
-    """Xử lý yêu cầu từ client."""
+
     command = data.decode("utf-8").split(":")
     global server_socket
 
     if command[0] == "CREATE_ACCOUNT":
         username = command[1]
-        password = command[2].encode("utf-8")
+        password = command[2]
+        IPAddr = command[3]
         user_dir = os.path.join(PATH_TO_SAVE, username)
+
 
         if os.path.exists(user_dir):
             server_socket.sendto(b"USERNAME_EXISTS", client_address)
         else:
             os.makedirs(user_dir, exist_ok=True)
-            hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
-            with open(os.path.join(user_dir, "password.txt"), "wb") as f:
-                f.write(hashed_password)
             with open(os.path.join(user_dir, "new_email.txt"), "w") as f:
-                f.write("Welcome! Your account has been created successfully.")
+                f.write(f"Created at: {timestamp}\nUsername: {username}\nPassword: {password}\nIPAddress: {IPAddr}")
             server_socket.sendto(b"Account created successfully.", client_address)
             log_message(f"New account created: {username}")
 
+
+
     elif command[0] == "LOGIN":
+
         username = command[1]
-        password = command[2].encode("utf-8")
+
+        password = command[2]
+
         user_dir = os.path.join(PATH_TO_SAVE, username)
-        password_file = os.path.join(user_dir, "password.txt")
+
+        new_email_file = os.path.join(user_dir, "new_email.txt")
 
         if not os.path.exists(user_dir):
+
             server_socket.sendto(b"USER_NOT_FOUND", client_address)
+
         else:
-            with open(password_file, "rb") as f:
-                stored_hashed_password = f.read()
-            if bcrypt.checkpw(password, stored_hashed_password):
-                server_socket.sendto(b"LOGIN_SUCCESS", client_address)
-                log_message(f"User {username} logged in successfully.")
-            else:
-                server_socket.sendto(b"INVALID_PASSWORD", client_address)
+
+            try:
+
+                with open(new_email_file, "r", encoding="utf-8") as f:
+
+                    lines = f.readlines()
+
+                # Tìm dòng chứa mật khẩu
+
+                stored_password = None
+
+                for line in lines:
+
+                    if line.startswith("Password: "):  # Tìm dòng chứa password
+
+                        stored_password = line.split("Password: ")[1].strip()
+
+                        break
+
+                if stored_password is None:
+
+                    server_socket.sendto(b"ERROR_READING_PASSWORD", client_address)
+
+                elif password == stored_password:  # So sánh trực tiếp chuỗi mật khẩu
+
+                    server_socket.sendto(b"LOGIN_SUCCESS", client_address)
+
+                    log_message(f"User {username} logged in successfully.")
+
+                else:
+
+                    server_socket.sendto(b"INVALID_PASSWORD", client_address)
+
+            except Exception as e:
+
+                print(f"Error reading password file for {username}: {e}")
+
+                server_socket.sendto(b"ERROR_READING_PASSWORD", client_address)
+
 
     elif command[0] == "SEND_EMAIL":
         username = command[1]
@@ -66,7 +105,7 @@ def handle_client(data, client_address):
         filename = os.path.join(user_dir, f"email_{len(os.listdir(user_dir)) + 1}_from_{sending_user}.txt")
 
         with open(filename, "w") as f:
-            f.write(email_content)
+            f.write(f"{timestamp}: {email_content}\n from: {sending_user}");
         server_socket.sendto(b"Email sent successfully.", client_address)
         log_message(f"Email sent from {sending_user} to {username}")
 
@@ -95,11 +134,10 @@ def handle_client(data, client_address):
 
 
 def start_server():
-    """Khởi động server."""
     global server_socket
     port = int(port_entry.get())
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    server_socket.bind(("localhost", port))
+    server_socket.bind(("0.0.0.0", port))
     log_message(f"Mail Server started on port {port}")
 
     while True:
@@ -108,7 +146,7 @@ def start_server():
 
 
 def switch_to_log_view():
-    """Chuyển sang giao diện log khi server bắt đầu chạy."""
+
     start_frame.pack_forget()
     root.geometry("800x300")
     log_frame.pack(fill=tk.BOTH, expand=True)
@@ -139,5 +177,7 @@ tk.Button(start_frame, text="Start Server", command=switch_to_log_view, font=("A
 log_frame = tk.Frame(root)
 log_text = scrolledtext.ScrolledText(log_frame, width=90, height=25, font=("Arial", 14), state=tk.DISABLED)
 log_text.pack(padx=10, pady=10)
+
+
 
 root.mainloop()
